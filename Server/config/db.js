@@ -1,11 +1,37 @@
-const {Pool} = require('pg');
+const { Pool } = require('pg');
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL must be set.');
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error(
+    'DATABASE_URL is missing. Set it in Server/.env for local development or in your hosting provider environment for deployment.',
+  );
+}
+
+if (process.env.NODE_ENV === 'production') {
+  let databaseHost;
+
+  try {
+    databaseHost = new URL(databaseUrl).hostname.toLowerCase();
+  } catch {
+    throw new Error('DATABASE_URL must be a valid PostgreSQL connection URL.');
+  }
+
+  if (
+    databaseHost === 'localhost' ||
+    databaseHost === '127.0.0.1' ||
+    databaseHost === '0.0.0.0' ||
+    databaseHost === '[::1]' ||
+    databaseHost.endsWith('.localhost')
+  ) {
+    throw new Error(
+      'DATABASE_URL points to localhost in production. Set it to your hosted PostgreSQL database URL in the hosting provider environment.',
+    );
+  }
 }
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, 
+  connectionString: databaseUrl,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
