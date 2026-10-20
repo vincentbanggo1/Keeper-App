@@ -2,7 +2,7 @@
 
 function Footer(){
     return(
-        <footer>Vincent❤️</footer>
+        <footer>Vincent</footer>
     )
 }
 
